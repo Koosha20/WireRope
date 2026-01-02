@@ -177,9 +177,11 @@ generate_matrix_key() {
         docker pull matrixdotorg/dendrite-monolith:latest
         
         log_info "Running key generation..."
-        docker run --rm -v "$(pwd)/dendrite:/etc/dendrite" \
+        docker run --rm \
+            --entrypoint /usr/bin/generate-keys \
+            -v "$(pwd)/dendrite:/etc/dendrite" \
             matrixdotorg/dendrite-monolith:latest \
-            /usr/bin/generate-keys --private-key /etc/dendrite/matrix_key.pem
+            --private-key /etc/dendrite/matrix_key.pem
         
         if [ -f "dendrite/matrix_key.pem" ]; then
             chmod 600 dendrite/matrix_key.pem
