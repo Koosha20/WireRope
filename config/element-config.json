@@ -63,7 +63,7 @@
         "welcome_url": "welcome.html"
     },
     "map_style_url": "",
-    "permalink_prefix": "",
+    "permalink_prefix": "https://${DOMAIN}",
     "mobile_builds": {
         "ios": null,
         "android": null,
