@@ -48,7 +48,15 @@
         file_server
     }
 
-    # Element Web (default)
+    # Element App - serve at /app/ path
+    handle /app/* {
+        uri strip_prefix /app
+        root * /srv/element
+        file_server
+        try_files {path} /index.html
+    }
+
+    # Element Web (default for other paths)
     handle {
         root * /srv/element
         file_server

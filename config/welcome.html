@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>زنجیر - پیام‌رسان امن</title>
+    <script>
+        // If URL has a hash (like #/login), redirect to Element's app
+        if (window.location.hash && window.location.hash !== '#/') {
+            window.location.href = '/app/' + window.location.hash;
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
     <style>
@@ -539,7 +545,7 @@
 
         <!-- CTA Button -->
         <div class="cta-container">
-            <a href="#/login" class="btn btn-primary">
+            <a href="/app/#/login" class="btn btn-primary">
                 ورود به حساب
                 <span>←</span>
             </a>
