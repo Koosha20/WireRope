@@ -19,12 +19,12 @@
         respond `{"m.homeserver": {"base_url": "https://{$SERVER_ADDRESS}"}}`
     }
 
-    # Matrix API
-    handle /_matrix/* {
-        reverse_proxy conduit:6167
+    @conduit_6167 {
+        path /_matrix/* /_dendrite/*
     }
 
-    handle /_dendrite/* {
+    # Matrix API
+    handle @conduit_6167 {
         reverse_proxy conduit:6167
     }
 
