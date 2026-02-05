@@ -17,13 +17,12 @@
         respond `{"m.homeserver": {"base_url": "https://{$DOMAIN}"}, "m.identity_server": {"base_url": "https://vector.im"}}`
     }
 
-    # Matrix Client-Server API
-    handle /_matrix/* {
-        reverse_proxy conduit:6167
+    @conduit_6167 {
+        path /_matrix/* /_dendrite/*
     }
 
-    # Matrix Federation API
-    handle /_dendrite/* {
+    # Matrix Client-Server and Federation API
+    handle @conduit_6167 {
         reverse_proxy conduit:6167
     }
 
