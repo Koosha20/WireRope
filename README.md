@@ -19,7 +19,7 @@
 ---
 
 > [!IMPORTANT]
-> **This is a fork from MatinSenPai/Zanjir!**
+> **This is a fork from [MatinSenPai/Zanjir](https://github.com/MatinSenPai/Zanjir)**
 
 > [!IMPORTANT]
 > **Upgrading from Dendrite?** If you previously installed Zanjir with Dendrite, you need to migrate to the new Conduit-based version. **This will require a fresh installation and all data will be lost.** See the [Migration Guide](MIGRATE.md) for step-by-step instructions.
