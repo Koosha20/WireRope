@@ -67,8 +67,18 @@
     header {
         X-Frame-Options SAMEORIGIN
         X-Content-Type-Options nosniff
-        X-XSS-Protection "1; mode=block"
         Referrer-Policy strict-origin-when-cross-origin
+        Content-Security-Policy "
+          default-src 'none';
+          script-src 'self' 'unsafe-eval';
+          img-src 'self' data: blob:;
+          font-src 'self' data:;
+          style-src 'self' 'unsafe-inline';
+          media-src 'self' blob:;
+          frame-ancestors 'self';
+          base-uri 'self';
+          connect-src 'self';
+          object-src 'none'; "
     }
 
     # Logging
