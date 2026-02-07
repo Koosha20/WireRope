@@ -1,94 +1,119 @@
 # Zanjir - Caddy Reverse Proxy Configuration (Domain Mode)
 # Automatic HTTPS with Let's Encrypt
 
-:{$HTTPS_PORT:-443} {
-    # Encode responses
-    encode gzip zstd
+{$DOMAIN}:{$HTTPS_PORT} {
+        # Encode responses
+        encode gzip zstd
 
-    # Matrix .well-known endpoints
-    handle /.well-known/matrix/server {
-        header Content-Type application/json
-        respond `{"m.server": "{$DOMAIN}:{$HTTPS_PORT:-443}"}`
-    }
+        # Matrix .well-known endpoints
+        handle /.well-known/matrix/server {
+            header Content-Type application/json
+            respond `{"m.server": "{$DOMAIN}:{$HTTPS_PORT}"}`
+        }
 
-    handle /.well-known/matrix/client {
-        header Content-Type application/json
-        header Access-Control-Allow-Origin *
-        respond `{"m.homeserver": {"base_url": "https://{$DOMAIN}"}, "m.identity_server": {"base_url": "https://vector.im"}}`
-    }
+        handle /.well-known/matrix/client {
+            header Content-Type application/json
+            header Access-Control-Allow-Origin *
+            respond `{"m.homeserver": {"base_url": "https://{$DOMAIN}"}, "m.identity_server": {"base_url": "https://vector.im"}}`
+        }
 
-    @conduit_6167 {
-        path /_matrix/* /_dendrite/*
-    }
+        @conduit_6167 {
+            path /_matrix/* /_dendrite/*
+        }
 
-    # Matrix Client-Server and Federation API
-    handle @conduit_6167 {
-        reverse_proxy conduit:6167
-    }
+        # Matrix Client-Server and Federation API
+        handle @conduit_6167 {
+            reverse_proxy conduit:6167 {
+                transport http {
+                    keepalive 64s
+                    response_header_timeout 30s
+                    dial_timeout 5s
+                }
+                flush_interval -1
+            }
+        }
 
-    # Admin Panel
-    handle /admin/* {
-        reverse_proxy admin:5000
-    }
+        # Admin Panel
+        handle /admin/* {
+            reverse_proxy admin:5000 {
+                transport http {
+                    keepalive 16s
+                    response_header_timeout 20s
+                    dial_timeout 5s
+                }
+            }
+        }
 
-    # Mobile guide - serve our custom page directly
-    handle /mobile_guide* {
-        root * /srv/element/mobile_guide
-        rewrite * /index.html
-        file_server
-    }
+        # Mobile guide - serve our custom page directly
+        handle /mobile_guide* {
+            root * /srv/element/mobile_guide
+            rewrite * /index.html
+            file_server
+        }
 
-    # Welcome page - serve our custom page directly (bypasses Element's wrapper)
-    @welcome {
-        path / /welcome /welcome.html
-    }
-    handle @welcome {
-        root * /srv/element
-        rewrite * /welcome.html
-        file_server
-    }
+        # Welcome page - serve our custom page directly (bypasses Element's wrapper)
+        @welcome {
+            path / /welcome /welcome.html
+        }
+        handle @welcome {
+            root * /srv/element
+            rewrite * /welcome.html
+            file_server
+        }
 
-    # Element App - serve at /app/ path
-    handle /app/* {
-        uri strip_prefix /app
-        root * /srv/element
-        file_server
-        try_files {path} /index.html
-    }
+        # Element App - serve at /app/ path
+        handle /app/* {
+            uri strip_prefix /app
+            root * /srv/element
+            file_server
+            try_files {path} /index.html
+        }
 
-    # Element Web (default for other paths)
-    handle {
-        root * /srv/element
-        file_server
-        try_files {path} /index.html
-    }
+        # Element Web (default for other paths)
+        handle {
+            root * /srv/element
+            file_server
+            try_files {path} /index.html
+        }
 
-    # Security headers
-    header {
-        X-Frame-Options SAMEORIGIN
-        X-Content-Type-Options nosniff
-        Referrer-Policy strict-origin-when-cross-origin
-        Content-Security-Policy "
-          default-src 'none';
-          script-src 'self' 'unsafe-eval';
-          img-src 'self' data: blob:;
-          font-src 'self' data:;
-          style-src 'self' 'unsafe-inline';
-          media-src 'self' blob:;
-          frame-ancestors 'self';
-          base-uri 'self';
-          connect-src 'self';
-          object-src 'none'; "
-    }
+        # Security headers
+        header {
+            X-Frame-Options SAMEORIGIN
+            X-Content-Type-Options nosniff
+            Referrer-Policy strict-origin-when-cross-origin
+            Content-Security-Policy "
+              default-src 'none';
+              script-src 'self' 'unsafe-eval';
+              img-src 'self' data: blob:;
+              font-src 'self' data:;
+              style-src 'self' 'unsafe-inline';
+              media-src 'self' blob:;
+              frame-ancestors 'self';
+              base-uri 'self';
+              connect-src 'self';
+              object-src 'none'; "
+        }
 
-    # Logging
-    log {
-        output stdout
-        format console
-    }
+        # Logging
+        log {
+            output stdout
+            format console
+        }
+
+        tls {
+            curves x25519 secp256r1
+        }
+
+        @staticAssets {
+            path *.css *.js *.woff2 *.woff *.ttf *.svg *.png *.jpg *.jpeg *.json
+        }
+
+        header @staticAssets {
+            Cache-Control "public, max-age=31536000, immutable"
+        }
 }
 
 # Redirect HTTP to HTTPS
-:{$HTTP_PORT:-80} {
-    redir https://{host}:{$HTTPS_PORT:-443}{uri} permanent
+{$DOMAIN}:{$HTTP_PORT} {
+    redir https://{$DOMAIN}:{$HTTPS_PORT}{uri} permanent
 }
